@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "summary": "Convenience functions for working with update in Elm",
+    "repository": "https://github.com/ccapndave/elm-update-extra.git",
+    "license": "BSD3",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Update.Extra",
+        "Update.Extra.Infix"
+    ],
+    "dependencies": {
+        "elm-lang/core": "4.0.0 <= v < 5.0.0"
+    },
+    "elm-version": "0.17.0 <= v < 0.18.0"
+}
