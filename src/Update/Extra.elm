@@ -24,4 +24,4 @@ pipeUpdate (model, cmd) f =
   let
     (model', cmd') = f model
   in
-  (model', Cmd.batch [ cmd', cmd ])
+  (model', Cmd.batch [ cmd, cmd' ])
