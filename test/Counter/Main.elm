@@ -28,6 +28,7 @@ type Msg
   | DecrementBy Int
   | IncrementN
   | DecrementN
+  | IncrementBy' Int
 
 
 init: (Model, Cmd Msg)
@@ -65,8 +66,8 @@ update msg model =
       (model, Cmd.none)
         |> Update.filter (n > 0)
           ( \state -> state
-              |> Update.andThen (update Increment)
-              |> Update.andThen (update (IncrementBy (n - 1)))
+              |> Update.andThen update Increment
+              |> Update.andThen update (IncrementBy (n - 1))
           )
     DecrementBy n ->
       let
@@ -78,6 +79,9 @@ update msg model =
         in
           (model, Cmd.none)
             |> Update.batch update msgs
+    IncrementBy' n ->
+      (model, Cmd.none)
+        |> Update.batch update (List.repeat n Increment)
 
 
 view : Model -> Html Msg
@@ -88,6 +92,7 @@ view model = div
   , mkButton DecrementN "Decrement n"
   , labelledNumberView model.count "count: "
   , mkButton (IncrementBy model.n) "Increment"
+  , mkButton (IncrementBy' model.n) "Increment'"
   , mkButton (DecrementBy model.n) "Decrement"
   ]
 

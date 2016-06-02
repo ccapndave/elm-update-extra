@@ -43,15 +43,15 @@ For example:
 ```elm
 update msg model =
   model ! []
-    |> andThen (update SomeMessage)
-    |> andThen (update SomeOtherMessage)
+    |> andThen update SomeMessage
+    |> andThen update SomeOtherMessage
     ...
 ```
 -}
-andThen : (model -> (model, Cmd msg)) -> (model, Cmd msg) -> (model, Cmd msg)
-andThen update (model, cmd) =
+andThen : (msg -> model -> (model, Cmd msg)) -> msg -> (model, Cmd msg) -> (model, Cmd msg)
+andThen update msg (model, cmd) =
   let
-    (model', cmd') = update model
+    (model', cmd') = update msg model
   in
     (model', Cmd.batch [cmd, cmd'])
 
@@ -65,9 +65,9 @@ update msg model =
     SomeMessage i ->
       model ! []
         |> filter (i > 10)
-            (    andThen (update BiggerThanTen)
-              >> andThen (update AnotherMessage)
-              >> andThen (update EvenMoreMessages)
+            (    andThen update BiggerThanTen
+              >> andThen update AnotherMessage
+              >> andThen update EvenMoreMessages
             )
         |> andThen (update AlwaysTriggeredAfterPredicate)
 ```
@@ -77,9 +77,9 @@ If you want to the pipeline operator in the nested pipeline, consider a lambda:
 ...
 |> filter (i > 10)
   ( \state -> state
-      |> andThen (update BiggerThanTen)
-      |> andThen (update AnotherMessage)
-      |> andThen (update EvenMoreMessages)
+      |> andThen update BiggerThanTen
+      |> andThen update AnotherMessage
+      |> andThen update EvenMoreMessages
   )
 |> andThen (update AlwaysTriggeredAfterPredicate)
 ```
@@ -95,7 +95,7 @@ filter pred f =
 
 ```elm
 update msg model = model ! []
-  |> andThen (update AMessage)
+  |> andThen update AMessage
   |> addCmd doSomethingWithASideEffect
 ```
 -}
@@ -116,6 +116,6 @@ update msg model = model ! []
 batch : (msg -> model -> (model, Cmd msg)) -> List msg -> (model, Cmd msg) -> (model, Cmd msg)
 batch update msgs init =
   let
-    foldUpdate = andThen << update
+    foldUpdate = andThen update
   in
     List.foldl foldUpdate init msgs
