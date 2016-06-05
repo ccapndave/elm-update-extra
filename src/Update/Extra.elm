@@ -49,11 +49,7 @@ update msg model =
 ```
 -}
 andThen : (msg -> model -> (model, Cmd msg)) -> msg -> (model, Cmd msg) -> (model, Cmd msg)
-andThen update msg (model, cmd) =
-  let
-    (model', cmd') = update msg model
-  in
-    (model', Cmd.batch [cmd, cmd'])
+andThen update = update >> flip pipeUpdate
 
 {-| Allows you to conditionally trigger updates based on a predicate. Can be
 used with the pipeline operator.
