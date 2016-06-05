@@ -101,8 +101,8 @@ addCmd cmd' (model, cmd) = (model, Cmd.batch [cmd, cmd'])
 {-| allows you to attach multiple messages to an update at once.
 
 ```elm
-sequence msg model = model ! []
-  |> batch update
+update msg model = model ! []
+  |> sequence update
     [ AMessage
     , AnotherMessage
     , AThirdMessage
