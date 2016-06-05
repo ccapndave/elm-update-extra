@@ -3,7 +3,7 @@ module Update.Extra exposing
   , andThen
   , filter
   , addCmd
-  , batch
+  , sequence
   )
 
 {-| Convenience functions for working with effects in Elm
@@ -12,7 +12,7 @@ module Update.Extra exposing
 @docs andThen
 @docs filter
 @docs addCmd
-@docs batch
+@docs sequence
 -}
 
 {-| A function allowing you to compose calls to update.  Most useful when used
@@ -101,7 +101,7 @@ addCmd cmd' (model, cmd) = (model, Cmd.batch [cmd, cmd'])
 {-| allows you to attach multiple messages to an update at once.
 
 ```elm
-update msg model = model ! []
+sequence msg model = model ! []
   |> batch update
     [ AMessage
     , AnotherMessage
@@ -109,8 +109,8 @@ update msg model = model ! []
     ]
 ```
 -}
-batch : (msg -> model -> (model, Cmd msg)) -> List msg -> (model, Cmd msg) -> (model, Cmd msg)
-batch update msgs init =
+sequence : (msg -> model -> (model, Cmd msg)) -> List msg -> (model, Cmd msg) -> (model, Cmd msg)
+sequence update msgs init =
   let
     foldUpdate = andThen update
   in

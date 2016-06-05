@@ -78,10 +78,10 @@ update msg model =
             []
         in
           (model, Cmd.none)
-            |> Update.batch update msgs
+            |> Update.sequence update msgs
     IncrementBy' n ->
       (model, Cmd.none)
-        |> Update.batch update (List.repeat n Increment)
+        |> Update.sequence update (List.repeat n Increment)
 
 
 view : Model -> Html Msg
