@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.App as App
 import Html.Events exposing (..)
 import Update.Extra as Update
+import Update.Extra.Infix exposing ((:>))
 import Task
 import Debug
 
@@ -67,7 +68,7 @@ update msg model =
         |> Update.filter (n > 0)
           ( \state -> state
               |> Update.andThen update Increment
-              |> Update.andThen update (IncrementBy (n - 1))
+              :> update (IncrementBy (n - 1))
           )
     DecrementBy n ->
       let
