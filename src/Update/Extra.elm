@@ -22,6 +22,7 @@ For example:
       model ! []
         |> andThen update SomeMessage
         |> andThen update SomeOtherMessage
+        |> andThen update (MessageWithArguments "Hello")
         ...
 
 The same can be achieved using `Update.Extra.Infix.(:>)`.
@@ -34,6 +35,7 @@ For example:
       model ! []
         :> update SomeMessage
         :> update SomeOtherMessage
+        :> update (MessageWithArguments "Hello")
 -}
 andThen : (msg -> model -> (model, Cmd msg)) -> msg -> (model, Cmd msg) -> (model, Cmd msg)
 andThen update msg (model, cmd) =
@@ -41,6 +43,7 @@ andThen update msg (model, cmd) =
     (model', cmd') = update msg model
   in
     (model', Cmd.batch [cmd, cmd'])
+
 
 {-| Allows you to conditionally trigger updates based on a predicate. Can be
 used with the pipeline operator.
@@ -76,6 +79,7 @@ filter pred f =
   else
     identity
 
+
 {-| Allows you to attach a Cmd to an update pipeline.
 
 For example:
@@ -85,7 +89,9 @@ For example:
       |> addCmd doSomethingWithASideEffect
 -}
 addCmd : Cmd msg -> (model, Cmd msg) -> (model, Cmd msg)
-addCmd cmd' (model, cmd) = (model, Cmd.batch [cmd, cmd'])
+addCmd cmd' (model, cmd) =
+  (model, Cmd.batch [cmd, cmd'])
+
 
 {-| Allows you to attach multiple messages to an update at once.
 
