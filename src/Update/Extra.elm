@@ -3,6 +3,7 @@ module Update.Extra exposing
   , filter
   , addCmd
   , sequence
+  , identity
   )
 
 {-| Convenience functions for working with updates in Elm
@@ -11,6 +12,7 @@ module Update.Extra exposing
 @docs filter
 @docs addCmd
 @docs sequence
+@docs identity
 -}
 
 {-| Allows update call composition. Can be used with the pipeline operator (|>)
@@ -77,7 +79,7 @@ filter pred f =
   if pred then
     f
   else
-    identity
+    Basics.identity
 
 
 {-| Allows you to attach a Cmd to an update pipeline.
@@ -110,3 +112,41 @@ sequence update msgs init =
     foldUpdate = andThen update
   in
     List.foldl foldUpdate init msgs
+
+
+{-| This implements the identity function with regards to update pipelines.  This is designed to be used
+with the :> operator, allowing you to write elements in the pipeline that do nothing at all.
+
+    import Update.Extra as Update
+    import Update.Extra.Infix exposing ((:>))
+
+    update msg model =
+      model ! []
+        :> Update.identity
+
+This can be useful when you want to implement paths through the update pipeline without having to create
+a `Noop` Msg.  Its especially when working with `Maybe`s, where it can be awkward to use the `filter`
+function in a type-safe way.
+
+    import Update.Extra as Update
+    import Update.Extra.Infix exposing ((:>))
+    import Maybe.Extra exposing ((?))
+
+    type Msg
+      = UpdateName (Maybe String)
+      | SetupUser User
+
+    update msg model =
+      case msg of
+        UpdateName maybeAName ->
+          let
+            user : Maybe User
+            user =
+              Maybe.map createUser maybeAName
+          in
+          { model | user = user }
+              :> Maybe.map (update << SetupUser) user ? Update.identity
+-}
+identity : model -> (model, Cmd msg)
+identity model =
+  model ! []
