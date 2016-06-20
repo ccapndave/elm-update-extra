@@ -1,5 +1,5 @@
 {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "summary": "Convenience functions for working with update in Elm",
     "repository": "https://github.com/ccapndave/elm-update-extra.git",
     "license": "BSD3",
