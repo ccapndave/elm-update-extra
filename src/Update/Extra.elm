@@ -1,6 +1,7 @@
 module Update.Extra exposing
   ( andThen
   , filter
+  , updateModel
   , addCmd
   , sequence
   , identity
@@ -10,6 +11,7 @@ module Update.Extra exposing
 
 @docs andThen
 @docs filter
+@docs updateModel
 @docs addCmd
 @docs sequence
 @docs identity
@@ -80,6 +82,19 @@ filter pred f =
     f
   else
     Basics.identity
+
+
+{-| Allows you to update the model in an update pipeline.
+
+For example
+
+    update msg model = model ! []
+      |> updateModel \model -> { model | a = 1 }
+      |> updateModel \model -> { model | b = 2 }
+-}
+updateModel : (model -> model) -> (model, Cmd msg) -> (model, Cmd msg)
+updateModel f (model, cmd) =
+  (f model, cmd)
 
 
 {-| Allows you to attach a Cmd to an update pipeline.
