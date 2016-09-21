@@ -3,6 +3,7 @@ module Update.Extra exposing
   , filter
   , updateModel
   , addCmd
+  , mapCmd
   , sequence
   , identity
   )
@@ -13,6 +14,7 @@ module Update.Extra exposing
 @docs filter
 @docs updateModel
 @docs addCmd
+@docs mapCmd
 @docs sequence
 @docs identity
 -}
@@ -108,6 +110,13 @@ For example:
 addCmd : Cmd msg -> (model, Cmd msg) -> (model, Cmd msg)
 addCmd cmd' (model, cmd) =
   (model, Cmd.batch [cmd, cmd'])
+
+
+{-| Map over the Cmd in an update pipeline
+-}
+mapCmd : (msg -> msg') -> (model, Cmd msg) -> (model, Cmd msg')
+mapCmd tagger (model, cmd) =
+  (model, cmd |> Cmd.map tagger)
 
 
 {-| Allows you to attach multiple messages to an update at once.
