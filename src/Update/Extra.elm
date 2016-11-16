@@ -1,12 +1,13 @@
-module Update.Extra exposing
-  ( andThen
-  , filter
-  , updateModel
-  , addCmd
-  , mapCmd
-  , sequence
-  , identity
-  )
+module Update.Extra
+    exposing
+        ( andThen
+        , filter
+        , updateModel
+        , addCmd
+        , mapCmd
+        , sequence
+        , identity
+        )
 
 {-| Convenience functions for working with updates in Elm
 
@@ -18,6 +19,7 @@ module Update.Extra exposing
 @docs sequence
 @docs identity
 -}
+
 
 {-| Allows update call composition. Can be used with the pipeline operator (|>)
 to chain updates.
@@ -43,12 +45,13 @@ For example:
         :> update SomeOtherMessage
         :> update (MessageWithArguments "Hello")
 -}
-andThen : (msg -> model -> (model, Cmd msg)) -> msg -> (model, Cmd msg) -> (model, Cmd msg)
-andThen update msg (model, cmd) =
-  let
-    (model', cmd') = update msg model
-  in
-    (model', Cmd.batch [cmd, cmd'])
+andThen : (msg -> model -> ( model, Cmd msg )) -> msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+andThen update msg ( model, cmd ) =
+    let
+        ( model_, cmd_ ) =
+            update msg model
+    in
+        ( model_, Cmd.batch [ cmd, cmd_ ] )
 
 
 {-| Allows you to conditionally trigger updates based on a predicate. Can be
@@ -78,12 +81,12 @@ lambda:
       )
     |> andThen (update AlwaysTriggeredAfterPredicate)
 -}
-filter : Bool -> ((model, Cmd msg) -> (model, Cmd msg)) -> ((model, Cmd msg) -> (model, Cmd msg))
+filter : Bool -> (( model, Cmd msg ) -> ( model, Cmd msg )) -> (( model, Cmd msg ) -> ( model, Cmd msg ))
 filter pred f =
-  if pred then
-    f
-  else
-    Basics.identity
+    if pred then
+        f
+    else
+        Basics.identity
 
 
 {-| Allows you to update the model in an update pipeline.
@@ -94,9 +97,9 @@ For example
       |> updateModel \model -> { model | a = 1 }
       |> updateModel \model -> { model | b = 2 }
 -}
-updateModel : (model -> model) -> (model, Cmd msg) -> (model, Cmd msg)
-updateModel f (model, cmd) =
-  (f model, cmd)
+updateModel : (model -> model) -> ( model, Cmd msg ) -> ( model, Cmd msg )
+updateModel f ( model, cmd ) =
+    ( f model, cmd )
 
 
 {-| Allows you to attach a Cmd to an update pipeline.
@@ -107,16 +110,16 @@ For example:
       |> andThen update AMessage
       |> addCmd doSomethingWithASideEffect
 -}
-addCmd : Cmd msg -> (model, Cmd msg) -> (model, Cmd msg)
-addCmd cmd' (model, cmd) =
-  (model, Cmd.batch [cmd, cmd'])
+addCmd : Cmd msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+addCmd cmd_ ( model, cmd ) =
+    ( model, Cmd.batch [ cmd, cmd_ ] )
 
 
 {-| Map over the Cmd in an update pipeline
 -}
-mapCmd : (msg -> msg') -> (model, Cmd msg) -> (model, Cmd msg')
-mapCmd tagger (model, cmd) =
-  (model, cmd |> Cmd.map tagger)
+mapCmd : (msg -> msg_) -> ( model, Cmd msg ) -> ( model, Cmd msg_ )
+mapCmd tagger ( model, cmd ) =
+    ( model, cmd |> Cmd.map tagger )
 
 
 {-| Allows you to attach multiple messages to an update at once.
@@ -130,12 +133,13 @@ For example:
         , AThirdMessage
         ]
 -}
-sequence : (msg -> model -> (model, Cmd msg)) -> List msg -> (model, Cmd msg) -> (model, Cmd msg)
+sequence : (msg -> model -> ( model, Cmd msg )) -> List msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 sequence update msgs init =
-  let
-    foldUpdate = andThen update
-  in
-    List.foldl foldUpdate init msgs
+    let
+        foldUpdate =
+            andThen update
+    in
+        List.foldl foldUpdate init msgs
 
 
 {-| This implements the identity function with regards to update pipelines.  This is designed to be used
@@ -171,6 +175,6 @@ function in a type-safe way.
           { model | user = user }
               :> Maybe.map (update << SetupUser) user ? Update.identity
 -}
-identity : model -> (model, Cmd msg)
+identity : model -> ( model, Cmd msg )
 identity model =
-  model ! []
+    model ! []
