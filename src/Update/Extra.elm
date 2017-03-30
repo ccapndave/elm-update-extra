@@ -45,7 +45,7 @@ For example:
         :> update SomeOtherMessage
         :> update (MessageWithArguments "Hello")
 -}
-andThen : (msg -> model -> ( model, Cmd msg )) -> msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+andThen : (msg -> model -> ( model, Cmd a )) -> msg -> ( model, Cmd a ) -> ( model, Cmd a )
 andThen update msg ( model, cmd ) =
     let
         ( model_, cmd_ ) =
@@ -133,7 +133,7 @@ For example:
         , AThirdMessage
         ]
 -}
-sequence : (msg -> model -> ( model, Cmd msg )) -> List msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+sequence : (msg -> model -> ( model, Cmd a )) -> List msg -> ( model, Cmd a ) -> ( model, Cmd a )
 sequence update msgs init =
     let
         foldUpdate =
