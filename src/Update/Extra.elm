@@ -1,13 +1,11 @@
-module Update.Extra
-    exposing
-        ( andThen
-        , filter
-        , updateModel
-        , addCmd
-        , mapCmd
-        , sequence
-        , identity
-        )
+module Update.Extra exposing
+    ( andThen
+    , filter
+    , updateModel
+    , addCmd
+    , mapCmd
+    , sequence
+    )
 
 {-| Convenience functions for working with updates in Elm
 
@@ -17,7 +15,7 @@ module Update.Extra
 @docs addCmd
 @docs mapCmd
 @docs sequence
-@docs identity
+
 -}
 
 
@@ -27,23 +25,12 @@ to chain updates.
 For example:
 
     update msg model =
-      model ! []
+      ( model, Cmd.none )
         |> andThen update SomeMessage
         |> andThen update SomeOtherMessage
         |> andThen update (MessageWithArguments "Hello")
         ...
 
-The same can be achieved using `Update.Extra.Infix.(:>)`.
-
-For example:
-
-    import Update.Extra.Infix exposing ((:>))
-
-    update msg model =
-      model ! []
-        :> update SomeMessage
-        :> update SomeOtherMessage
-        :> update (MessageWithArguments "Hello")
 -}
 andThen : (msg -> model -> ( model, Cmd a )) -> msg -> ( model, Cmd a ) -> ( model, Cmd a )
 andThen update msg ( model, cmd ) =
@@ -51,7 +38,7 @@ andThen update msg ( model, cmd ) =
         ( model_, cmd_ ) =
             update msg model
     in
-        ( model_, Cmd.batch [ cmd, cmd_ ] )
+    ( model_, Cmd.batch [ cmd, cmd_ ] )
 
 
 {-| Allows you to conditionally trigger updates based on a predicate. Can be
@@ -60,15 +47,15 @@ used with the pipeline operator.
 For example:
 
     update msg model =
-      case msg of
-        SomeMessage i ->
-          model ! []
-            |> filter (i > 10)
-                (    andThen update BiggerThanTen
-                  >> andThen update AnotherMessage
-                  >> andThen update EvenMoreMessages
-                )
-            |> andThen (update AlwaysTriggeredAfterPredicate)
+        case msg of
+            SomeMessage i ->
+                ( model, Cmd.none )
+                    |> filter (i > 10)
+                        (andThen update BiggerThanTen
+                            >> andThen update AnotherMessage
+                            >> andThen update EvenMoreMessages
+                        )
+                    |> andThen (update AlwaysTriggeredAfterPredicate)
 
 If you want use to the pipeline operator in the nested pipeline, consider a
 lambda:
@@ -80,11 +67,13 @@ lambda:
           |> andThen update EvenMoreMessages
       )
     |> andThen (update AlwaysTriggeredAfterPredicate)
+
 -}
 filter : Bool -> (( model, Cmd msg ) -> ( model, Cmd msg )) -> (( model, Cmd msg ) -> ( model, Cmd msg ))
 filter pred f =
     if pred then
         f
+
     else
         Basics.identity
 
@@ -96,6 +85,7 @@ For example
     update msg model = model ! []
       |> updateModel \model -> { model | a = 1 }
       |> updateModel \model -> { model | b = 2 }
+
 -}
 updateModel : (model -> model) -> ( model, Cmd msg ) -> ( model, Cmd msg )
 updateModel f ( model, cmd ) =
@@ -106,9 +96,11 @@ updateModel f ( model, cmd ) =
 
 For example:
 
-    update msg model = model ! []
-      |> andThen update AMessage
-      |> addCmd doSomethingWithASideEffect
+    update msg model =
+        ( model, Cmd.none )
+            |> andThen update AMessage
+            |> addCmd doSomethingWithASideEffect
+
 -}
 addCmd : Cmd msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 addCmd cmd_ ( model, cmd ) =
@@ -126,12 +118,14 @@ mapCmd tagger ( model, cmd ) =
 
 For example:
 
-    update msg model = model ! []
-      |> sequence update
-        [ AMessage
-        , AnotherMessage
-        , AThirdMessage
-        ]
+    update msg model =
+        ( model, Cmd.none )
+            |> sequence update
+                [ AMessage
+                , AnotherMessage
+                , AThirdMessage
+                ]
+
 -}
 sequence : (msg -> model -> ( model, Cmd a )) -> List msg -> ( model, Cmd a ) -> ( model, Cmd a )
 sequence update msgs init =
@@ -139,42 +133,4 @@ sequence update msgs init =
         foldUpdate =
             andThen update
     in
-        List.foldl foldUpdate init msgs
-
-
-{-| This implements the identity function with regards to update pipelines.  This is designed to be used
-with the :> operator, allowing you to write elements in the pipeline that do nothing at all.
-
-    import Update.Extra as Update
-    import Update.Extra.Infix exposing ((:>))
-
-    update msg model =
-      model ! []
-        :> Update.identity
-
-This can be useful when you want to implement paths through the update pipeline without having to create
-a `Noop` Msg.  Its especially when working with `Maybe`s, where it can be awkward to use the `filter`
-function in a type-safe way.
-
-    import Update.Extra as Update
-    import Update.Extra.Infix exposing ((:>))
-    import Maybe.Extra exposing ((?))
-
-    type Msg
-      = UpdateName (Maybe String)
-      | SetupUser User
-
-    update msg model =
-      case msg of
-        UpdateName maybeAName ->
-          let
-            user : Maybe User
-            user =
-              Maybe.map createUser maybeAName
-          in
-          { model | user = user }
-              :> Maybe.map (update << SetupUser) user ? Update.identity
--}
-identity : model -> ( model, Cmd msg )
-identity model =
-    model ! []
+    List.foldl foldUpdate init msgs

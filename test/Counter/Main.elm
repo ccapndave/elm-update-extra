@@ -1,16 +1,16 @@
-module Counter.Main exposing (..)
+module Counter.Main exposing (Model, Msg(..), debug, init, labelledNumberView, main, mkButton, subscriptions, update, view)
 
+import Browser
+import Debug
 import Html exposing (..)
 import Html.Events exposing (..)
-import Update.Extra as Update
-import Update.Extra.Infix exposing ((:>))
 import Task
-import Debug
+import Update.Extra as Update
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -24,6 +24,10 @@ type alias Model =
     }
 
 
+type alias Flags =
+    {}
+
+
 type Msg
     = NoOp
     | Increment
@@ -35,13 +39,9 @@ type Msg
     | IncrementBy_ Int
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model
-        0
-        10
-    , Cmd.none
-    )
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( Model 0 10, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -61,19 +61,25 @@ update msg model =
             ( model, Cmd.none )
 
         Increment ->
-            { model | count = model.count + 1 } ! []
+            ( { model | count = model.count + 1 }
+            , Cmd.none
+            )
 
         Decrement ->
-            { model | count = model.count - 1 } ! []
+            ( { model | count = model.count - 1 }
+            , Cmd.none
+            )
 
         IncrementN ->
-            { model | n = model.n + 1 }
-                ! []
+            ( { model | n = model.n + 1 }
+            , Cmd.none
+            )
                 |> Update.addCmd (debug "incrementing n")
 
         DecrementN ->
-            { model | n = model.n - 1 }
-                ! []
+            ( { model | n = model.n - 1 }
+            , Cmd.none
+            )
                 |> Update.addCmd (debug "decrementing n")
 
         IncrementBy n ->
@@ -82,7 +88,7 @@ update msg model =
                     (\state ->
                         state
                             |> Update.andThen update Increment
-                            :> update (IncrementBy (n - 1))
+                            |> Update.andThen update (IncrementBy (n - 1))
                     )
 
         DecrementBy n ->
@@ -90,11 +96,12 @@ update msg model =
                 msgs =
                     if n > 0 then
                         [ Decrement, DecrementBy (n - 1) ]
+
                     else
                         []
             in
-                ( model, Cmd.none )
-                    |> Update.sequence update msgs
+            ( model, Cmd.none )
+                |> Update.sequence update msgs
 
         IncrementBy_ n ->
             ( model, Cmd.none )
@@ -119,7 +126,7 @@ labelledNumberView : Int -> String -> Html Msg
 labelledNumberView amount label =
     div
         []
-        [ text <| label ++ toString amount ]
+        [ text <| label ++ String.fromInt amount ]
 
 
 mkButton : Msg -> String -> Html Msg
