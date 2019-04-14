@@ -82,7 +82,7 @@ filter pred f =
 
 For example
 
-    update msg model = model ! []
+    update msg model = ( model, Cmd.none )
       |> updateModel \model -> { model | a = 1 }
       |> updateModel \model -> { model | b = 2 }
 
